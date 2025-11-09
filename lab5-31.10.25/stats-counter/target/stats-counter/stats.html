@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Статистика запросов</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #fafafa; }
+    table { border-collapse: collapse; width: 90%; margin-top: 20px; background: white; }
+    th, td { padding: 8px 12px; border: 1px solid #ccc; }
+    th { background: #f0f0f0; text-align: left; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    button { margin-top: 15px; padding: 8px 16px; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Статистика HTTP-запросов</h1>
+  <p>Данные обновляются при каждом обновлении страницы.</p>
+
+  <form method="post" action="stats">
+    <button type="submit" name="action" value="reset">Сбросить статистику</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr><th>Запрос</th><th>Количество</th></tr>
+    </thead>
+    <tbody id="stats-body">
+      <!-- stats inserted by JS -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadStats() {
+      try {
+        const res = await fetch('stats?format=json');
+        const data = await res.json();
+        const tbody = document.getElementById('stats-body');
+        tbody.innerHTML = '';
+        Object.entries(data)
+          .sort((a,b)=>b[1]-a[1])
+          .forEach(([key, val])=>{
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${key}</td><td>${val}</td>`;
+            tbody.appendChild(row);
+          });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    loadStats();
+    setInterval(loadStats, 5000); // refresh every 5s
+  </script>
+</body>
+</html>
