@@ -42,7 +42,7 @@ public class UploadServlet extends HttpServlet {
                 return;
             }
 
-            String submitted = getSubmittedFileName(filePart);
+            String submitted = filePart.getSubmittedFileName();
             String fileName = sanitizeFilename(Paths.get(submitted).getFileName().toString());
             String finalName = System.currentTimeMillis() + "_" + fileName;
             Path target = uploadDir.resolve(finalName);
@@ -64,26 +64,6 @@ public class UploadServlet extends HttpServlet {
         }
     }
 
-    private static String getSubmittedFileName(Part part) {
-        String cd = part.getHeader("content-disposition");
-        if (cd == null) return "";
-        for (String token : cd.split(";")) {
-            token = token.trim();
-            if (token.startsWith("filename")) {
-                String[] kv = token.split("=", 2);
-                if (kv.length == 2) {
-                    String filename = kv[1].trim();
-                    if (filename.startsWith("\"") && filename.endsWith("\"") && filename.length() >= 2) {
-                        filename = filename.substring(1, filename.length() - 1);
-                    }
-                    return filename;
-                }
-            }
-        }
-        return "";
-    }
-
-
     private String sanitizeFilename(String filename) {
         String sanitized = filename.replaceAll("\\p{Cntrl}", "")
                 .replaceAll("[\\\\/]+", "")
@@ -91,5 +71,12 @@ public class UploadServlet extends HttpServlet {
         if (sanitized.length() > 200) sanitized = sanitized.substring(sanitized.length() - 200);
         if (sanitized.isEmpty()) sanitized = "file";
         return sanitized;
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        req.getRequestDispatcher("/upload.html").forward(req, resp);
     }
 }
