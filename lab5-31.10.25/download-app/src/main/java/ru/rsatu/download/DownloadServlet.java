@@ -73,22 +73,33 @@ public class DownloadServlet extends HttpServlet {
             for (Path p : stream) {
                 if (Files.isRegularFile(p)) all.add(p);
             }
-            final String id = idParam != null ? idParam.trim() : null;
-            final String type = typeParam != null ? typeParam.trim() : null;
 
-            return all.stream().filter(p -> {
+            String id = idParam != null ? idParam.trim() : null;
+            String type = typeParam != null ? typeParam.trim() : null;
+
+            List<Path> result = new ArrayList<>();
+            for (Path p : all) {
                 String name = p.getFileName().toString();
+
                 if (id != null && !id.isEmpty()) {
-                    if (name.startsWith(id + "_") || name.startsWith(id + "-") || name.equals(id)) return true;
-                    if (Pattern.compile(".*(\\A|[_\\-\\.])" + Pattern.quote(id) + "([_\\-\\.]|\\z).*").matcher(name).matches()) return true;
+                    if (name.startsWith(id + "_") ||
+                            name.startsWith(id + "-") ||
+                            name.equals(id) ||
+                            Pattern.compile(".*(\\A|[_\\-\\.])" + Pattern.quote(id) + "([_\\-\\.]|\\z).*").matcher(name).matches()) {
+                        result.add(p);
+                        continue;
+                    }
                 }
+
                 if (type != null && !type.isEmpty()) {
-                    String lower = name.toLowerCase();
-                    if (lower.endsWith("." + type.toLowerCase())) return true;
-                    if (lower.contains("." + type.toLowerCase() + ".")) return true;
+                    String lowerName = name.toLowerCase();
+                    String lowerType = type.toLowerCase();
+                    if (lowerName.endsWith("." + lowerType)) {
+                        result.add(p);
+                    }
                 }
-                return false;
-            }).collect(Collectors.toList());
+            }
+            return result;
         }
     }
 
@@ -103,10 +114,9 @@ public class DownloadServlet extends HttpServlet {
         if (contentType == null) contentType = "application/octet-stream";
 
         resp.setContentType(contentType);
-        try {
-            long size = Files.size(file);
-            if (size >= 0) resp.setContentLengthLong(size);
-        } catch (IOException ignored) {}
+
+        long size = Files.size(file);
+        if (size >= 0) resp.setContentLengthLong(size);
 
         String headerValue = buildContentDispositionHeader(originalName);
         resp.setHeader("Content-Disposition", headerValue);
