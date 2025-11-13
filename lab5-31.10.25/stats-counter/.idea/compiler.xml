@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="stats-app-html" />
+        <module name="stats-counter" />
       </profile>
     </annotationProcessing>
   </component>

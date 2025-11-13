@@ -24,9 +24,7 @@
     <thead>
       <tr><th>Запрос</th><th>Количество</th></tr>
     </thead>
-    <tbody id="stats-body">
-      <!-- stats inserted by JS -->
-    </tbody>
+    <tbody id="stats-body"></tbody>
   </table>
 
   <script>
@@ -48,7 +46,7 @@
       }
     }
     loadStats();
-    setInterval(loadStats, 5000); // refresh every 5s
+    setInterval(loadStats, 5000);
   </script>
 </body>
 </html>

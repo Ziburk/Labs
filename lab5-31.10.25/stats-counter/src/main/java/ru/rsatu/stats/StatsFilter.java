@@ -1,6 +1,5 @@
 package ru.rsatu.stats;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +11,7 @@ public class StatsFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) {
-        requestStats = CDI.current().select(RequestStats.class).get();
+        requestStats = new RequestStats();
     }
 
     @Override
@@ -21,12 +20,11 @@ public class StatsFilter implements Filter {
 
         if (request instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) request;
-            String path = req.getRequestURI();          // e.g. "/stats/stats.html" or "/stats/stats"
-            String ctx  = req.getContextPath();         // e.g. "/stats"
-            String statsServletPath = ctx + "/stats";   // "/stats/stats"
-            String statsHtmlPath    = ctx + "/stats.html"; // "/stats/stats.html"
+            String path = req.getRequestURI();
+            String ctx  = req.getContextPath();
+            String statsServletPath = ctx + "/stats";
+            String statsHtmlPath    = ctx + "/stats.html";
 
-            // Exclude exact paths: the stats servlet and the static stats.html page
             if (!path.equals(statsServletPath) && !path.equals(statsServletPath + "/")
                     && !path.equals(statsHtmlPath) && shouldCount(path)) {
                 String key = req.getMethod() + " " + path;
@@ -39,11 +37,8 @@ public class StatsFilter implements Filter {
 
     private boolean shouldCount(String path) {
         if (path == null) return false;
-        // Exclude common static resource extensions
         if (path.matches(".*(\\\\.css|\\\\.js|\\\\.png|\\\\.jpg|\\\\.jpeg|\\\\.gif|\\\\.ico)$")) return false;
         return true;
     }
 
-    @Override
-    public void destroy() {}
 }
